@@ -7,7 +7,13 @@ exports.add = async (req, res) => {
         return res.status(406).json({error: 'The id is invalid'}).end();
     }
 
+    if (req.body.product.trim() !== 'community' && !req.body.order_id)
+    {
+        return res.status(406).json({error: 'Order id is required'}).end();
+    }
+
     Object.entries(req.body).forEach(([key, val]) => {
+
         let typeString = ['id', 'name', 'email', 'organization', 'message', 'order_id', 'refShare2Earn'];
 
         if ( typeof val !== "string" && typeString.includes(key))
