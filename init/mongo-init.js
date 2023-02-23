@@ -1,10 +1,10 @@
 db.createUser({
-  user: "web3Ids",
+  user: "web3Id",
   pwd: "demo",
   roles: [
     {
       role: "dbOwner",
-      db: "web3Ids",
+      db: "web3Id",
     },
   ],
 });

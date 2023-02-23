@@ -1,26 +1,31 @@
-module.exports.product = function () {
+module.exports.preregistration = function () {
   return {
-    sku: {
+    id: {
       type: String,
       required: true,
+      unique: true
     },
     name: {
       type: String,
       required: true,
     },
-    description: {
+    product: {
       type: String,
       required: true,
     },
-    nftBlock: {
+    organization: {
       type: String,
       required: false,
     },
-    nftToken: {
+    message: {
       type: String,
       required: false,
     },
-    main_image: {
+    orderId: {
+      type: String,
+      required: false,
+    },
+    refShare2Earn: {
       type: String,
       required: false,
     },

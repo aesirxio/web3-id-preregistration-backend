@@ -21,10 +21,10 @@ app.use(
 
 // Setup environment variables
 const port = process.env.PORT || 3000;
-const dbUser = process.env.DBUSER || "aesirxweb3";
+const dbUser = process.env.DBUSER || "web3Id";
 const dbPass = process.env.DBPASS || "demo";
 const dbHost = process.env.DBHOST || "localhost";
-const dbName = process.env.DBNAME || "aesirxweb3";
+const dbName = process.env.DBNAME || "web3Id";
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -40,6 +40,7 @@ app.use(
 );
 app.use(bodyParser.json());
 // Connect to Mongoose and set connection variable
+
 mongoose
   .connect("mongodb://" + dbUser + ":" + dbPass + "@" + dbHost + "/" + dbName + "?authSource=admin", {
     useNewUrlParser: true,
