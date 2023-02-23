@@ -1,0 +1,33 @@
+{
+  "name": "web3-demo-pre-registrations",
+  "version": "1.0.0-alpha.1",
+  "description": "AesirX demo web3 pre registration",
+  "main": "index.js",
+  "scripts": {
+    "serve": "npx nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aesirxio/web3-id-preregistration-backend"
+  },
+  "author": "aesirx.io",
+  "license": "GPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/aesirxio/web3-id-preregistration-backend/issues"
+  },
+  "homepage": "https://github.com/aesirxio/web3-id-preregistration-backend#readme",
+  "dependencies": {
+    "@concordium/node-sdk": "^6",
+    "@grpc/grpc-js": "^1",
+    "body-parser": "^1",
+    "cors": "^2",
+    "dotenv-flow": "^3",
+    "express": "^4",
+    "mime-types": "^2.1.35",
+    "mongoose": "^6",
+    "multer": "^1.4.5-lts.1",
+    "nodemon": "^2",
+    "uuid": "^9"
+  }
+}
