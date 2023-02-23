@@ -12,6 +12,7 @@ module.exports.preregistration = function () {
     product: {
       type: String,
       required: true,
+      enum : ['community', 'starter', 'team', 'growth', 'enterprise']
     },
     organization: {
       type: String,
@@ -21,7 +22,7 @@ module.exports.preregistration = function () {
       type: String,
       required: false,
     },
-    orderId: {
+    order_id: {
       type: String,
       required: false,
     },
