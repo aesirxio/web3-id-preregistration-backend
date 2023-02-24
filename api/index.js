@@ -42,12 +42,23 @@ app.use(bodyParser.json());
 // Connect to Mongoose and set connection variable
 
 mongoose
-  .connect("mongodb://" + dbUser + ":" + dbPass + "@" + dbHost + "/" + dbName + "?authSource=admin", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(
+    "mongodb://" +
+      dbUser +
+      ":" +
+      dbPass +
+      "@" +
+      dbHost +
+      "/" +
+      dbName +
+      "?authSource=admin",
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
   .catch(function (err) {
-    console.log("DB connection failed");
+    console.log("DB connection failed: " + err.message);
     process.exit(1);
   });
 
