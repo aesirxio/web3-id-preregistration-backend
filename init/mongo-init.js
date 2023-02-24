@@ -1,10 +1,12 @@
+require('../api/node_modules/dotenv-flowss').config();
+
 db.createUser({
-  user: "web3Id",
-  pwd: "demo",
+  user: process.env.MONGO_INITDB_ROOT_USERNAME || 'web3Id',
+  pwd: process.env.MONGO_INITDB_ROOT_PASSWORD || 'demo',
   roles: [
     {
       role: "dbOwner",
-      db: "web3Id",
+      db: process.env.MONGO_INITDB_DATABASE || 'web3Id',
     },
   ],
 });
