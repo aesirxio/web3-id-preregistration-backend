@@ -5,8 +5,13 @@ const {
   verifyMessageSignature,
   SchemaVersion,
   CcdAmount,
-  AccountTransactionType, AccountAddress, TransactionExpiry, buildBasicAccountSigner,
-  signTransaction, serializeUpdateContractParameters, getAccountTransactionHash
+  AccountTransactionType,
+  AccountAddress,
+  TransactionExpiry,
+  buildBasicAccountSigner,
+  signTransaction,
+  serializeUpdateContractParameters,
+  getAccountTransactionHash,
 } = require("@concordium/node-sdk");
 const fs = require("fs");
 
@@ -25,10 +30,6 @@ class Concordium {
     this.client = new JsonRpcClient(
       new HttpProvider(concordiumNode + ":" + concordiumPort)
     );
-    this.contractName = process.env.SMARTCONTRACT_NAME;
-    this.contractIndex = process.env.SMARTCONTRACT_INDEX;
-    this.contractSubindex = process.env.SMARTCONTRACT_SUBINDEX;
-    this.rawNFTModuleSchema = process.env.SMARTCONTRACT_RAWSCHEMA;
     this.private_key = process.env.PRIVATE_KEY;
   }
 
@@ -54,8 +55,7 @@ class Concordium {
       SchemaVersion.V2
     );
 
-    if (!account)
-    {
+    if (!account) {
       return returnValue.all_tokens;
     }
 
@@ -67,31 +67,33 @@ class Concordium {
   }
   async getNextNFT() {
     return String(Object.keys(await this.listNFTs()).length + 1).padStart(
-        8,
-        "0"
+      8,
+      "0"
     );
   }
   async mintNFT(address, token) {
-    const accountAddress   = new AccountAddress(address);
-    const nextAccountNonce = await this.client.getNextAccountNonce(accountAddress);
-    const nonce            = nextAccountNonce.nonce;
-    const signer           = await buildBasicAccountSigner(this.private_key);
+    const accountAddress = new AccountAddress(address);
+    const nextAccountNonce = await this.client.getNextAccountNonce(
+      accountAddress
+    );
+    const nonce = nextAccountNonce.nonce;
+    const signer = await buildBasicAccountSigner(this.private_key);
 
-    const contractName        = this.contractName;
+    const contractName = this.contractName;
     const receiveFunctionName = "mint";
-    const receiveName         = contractName + '.' + receiveFunctionName;
-    const rawModuleSchema     = Buffer.from(fs.readFileSync('./schema.bin'));
-    const schemaVersion       = SchemaVersion.V1;
-    const parameters          = {
-      owner: {Account: [address]},
-      tokens: [token]
-    }
+    const receiveName = contractName + "." + receiveFunctionName;
+    const rawModuleSchema = Buffer.from(fs.readFileSync("./schema.bin"));
+    const schemaVersion = SchemaVersion.V1;
+    const parameters = {
+      owner: { Account: [address] },
+      tokens: [token],
+    };
     const inputParams = serializeUpdateContractParameters(
-        contractName,
-        receiveFunctionName,
-        parameters,
-        rawModuleSchema,
-        schemaVersion
+      contractName,
+      receiveFunctionName,
+      parameters,
+      rawModuleSchema,
+      schemaVersion
     );
 
     const header = {
@@ -101,29 +103,42 @@ class Concordium {
     };
 
     const updateContractPayload = {
-        amount: new CcdAmount(BigInt(0)),
-        address: {
-          index: BigInt(this.contractIndex),
-          subindex: BigInt(this.contractSubindex),
-        },
-        receiveName: receiveName,
-        message: inputParams,
-        maxContractExecutionEnergy:  BigInt(10000)
-      };
+      amount: new CcdAmount(BigInt(0)),
+      address: {
+        index: BigInt(this.contractIndex),
+        subindex: BigInt(this.contractSubindex),
+      },
+      receiveName: receiveName,
+      message: inputParams,
+      maxContractExecutionEnergy: BigInt(10000),
+    };
 
     const accountTransaction = {
       header: header,
       payload: updateContractPayload,
       type: AccountTransactionType.Update,
     };
-    const lastFinalizedBlockHash = (await this.client.getConsensusStatus()).lastFinalizedBlock;
-    const accountInfo = await this.client.getAccountInfo(accountAddress, lastFinalizedBlockHash);
+    const lastFinalizedBlockHash = (await this.client.getConsensusStatus())
+      .lastFinalizedBlock;
+    const accountInfo = await this.client.getAccountInfo(
+      accountAddress,
+      lastFinalizedBlockHash
+    );
 
-    const transactionSignature = await signTransaction(accountTransaction, signer);
-    const success = await this.client.sendAccountTransaction(accountTransaction, transactionSignature);
+    const transactionSignature = await signTransaction(
+      accountTransaction,
+      signer
+    );
+    const success = await this.client.sendAccountTransaction(
+      accountTransaction,
+      transactionSignature
+    );
 
     if (success) {
-      return getAccountTransactionHash(accountTransaction, transactionSignature);
+      return getAccountTransactionHash(
+        accountTransaction,
+        transactionSignature
+      );
     }
   }
 }
