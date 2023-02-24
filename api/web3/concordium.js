@@ -30,7 +30,8 @@ class Concordium {
     this.client = new JsonRpcClient(
       new HttpProvider(concordiumNode + ":" + concordiumPort)
     );
-    this.private_key = process.env.PRIVATE_KEY;
+    this.ownerAccount = process.env.ACCOUNT_ADDRESS || "";
+    this.ownerPrivateKey = process.env.ACCOUNT_PRIVATEKEY || "";
   }
 
   async validateAccount(message, signature, account) {
@@ -77,7 +78,7 @@ class Concordium {
       accountAddress
     );
     const nonce = nextAccountNonce.nonce;
-    const signer = await buildBasicAccountSigner(this.private_key);
+    const signer = buildBasicAccountSigner(this.ownerPrivateKey);
 
     const contractName = this.contractName;
     const receiveFunctionName = "mint";
