@@ -25,13 +25,19 @@ class Concordium {
   contractName = "";
   contractIndex = 0;
   contractSubindex = 0;
+  ownerAccount = "";
+  ownerPrivateKey = "";
 
   constructor() {
     this.client = new JsonRpcClient(
       new HttpProvider(concordiumNode + ":" + concordiumPort)
     );
-    this.ownerAccount = process.env.ACCOUNT_ADDRESS || "";
-    this.ownerPrivateKey = process.env.ACCOUNT_PRIVATEKEY || "";
+    this.ownerAccount       = process.env.ACCOUNT_ADDRESS || "";
+    this.ownerPrivateKey    = process.env.ACCOUNT_PRIVATEKEY || "";
+    this.contractName       = process.env.SMARTCONTRACT_NAME || "";
+    this.contractIndex      = process.env.SMARTCONTRACT_INDEX || "";
+    this.contractSubindex   = process.env.SMARTCONTRACT_SUBINDEX || 0;
+    this.rawNFTModuleSchema = process.env.SMARTCONTRACT_RAWSCHEMA || 0;
   }
 
   async validateAccount(message, signature, account) {
@@ -139,6 +145,46 @@ class Concordium {
       return getAccountTransactionHash(
         accountTransaction,
         transactionSignature
+      );
+    }
+  }
+
+  async tranferCcd(toAddress) {
+    const accountAddress   = new AccountAddress(this.ownerAccount);
+    const nextAccountNonce = await this.client.getNextAccountNonce(accountAddress);
+    const nonce  = nextAccountNonce.nonce;
+    const signer = buildBasicAccountSigner(this.ownerPrivateKey);
+
+    const header = {
+      expiry: new TransactionExpiry(new Date(Date.now() + 3600000)),
+      nonce: nonce,
+      sender: accountAddress,
+    };
+
+    const simpleTransfer = {
+      amount: new CcdAmount(100n),
+      toAddress: new AccountAddress(toAddress),
+    };
+
+    const accountTransaction = {
+      header: header,
+      payload: simpleTransfer,
+      type: AccountTransactionType.Transfer,
+    };
+
+    const transactionSignature = await signTransaction(
+        accountTransaction,
+        signer
+    );
+    const success = await this.client.sendAccountTransaction(
+        accountTransaction,
+        transactionSignature
+    );
+
+    if (success) {
+      return getAccountTransactionHash(
+          accountTransaction,
+          transactionSignature
       );
     }
   }
