@@ -1,7 +1,6 @@
 // api-routes.js
 // Initialize express router and cache
 const router = require("express").Router();
-const multer = require("multer");
 
 // Set default API response
 router.get("/", function (req, res) {

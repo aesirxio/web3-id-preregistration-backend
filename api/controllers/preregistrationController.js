@@ -6,22 +6,6 @@ const Concordium = require("../web3/concordium");
 const concordium = new Concordium();
 
 exports.add = async (req, res) => {
-  if (
-    ["id", "name", "product"].filter(
-      (field) => typeof req.body[field] === "undefined"
-    ).length
-  ) {
-    return res.status(406).json({ error: "Required fields are missing" }).end();
-  }
-
-  if (
-    !["community", "starter", "team", "growth", "enterprise"].filter(
-      (product) => req.body.product === product
-    ).length
-  ) {
-    return res.status(406).json({ error: "Invalid product" }).end();
-  }
-
   if (!req.body.id.match(/^@[a-z\d_]{3,20}$/i)) {
     return res.status(406).json({ error: "Invalid id" }).end();
   }
@@ -49,6 +33,19 @@ exports.add = async (req, res) => {
     }
   });
 
+  let referrer = null;
+  if (typeof req.body.refShare2Earn !== "undefined") {
+    referrer = await Preregistration.findOne({
+      share2earn: req.body.refShare2Earn,
+    });
+    if (referrer === null) {
+      return res
+        .status(406)
+        .json({ error: "share2earn code is not valid" })
+        .end();
+    }
+  }
+
   const prereg = {
     id: req.body.id,
     name: req.body.name,
@@ -63,7 +60,18 @@ exports.add = async (req, res) => {
   try {
     await Preregistration.create(prereg);
   } catch (error) {
-    return res.status(406).json({ success: false }).end();
+    if (error.message.match(/^E11000/)) {
+      return res.status(406).json({ error: "Id already taken" }).end();
+    }
+    return res.status(406).json({ error: error.message }).end();
+  }
+
+  if (referrer !== null) {
+    console.log(referrer);
+    await Preregistration.updateOne(
+      { id: referrer.id },
+      { referred: referrer.referred + 1 }
+    );
   }
 
   res.status(201);
