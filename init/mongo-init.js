@@ -1,6 +1,6 @@
 db.createUser({
   user: "web3idpre",
-  pwd: "d2ViM2lkYWNjZXNz",
+  pwd: "password",
   roles: [
     {
       role: "dbOwner",
