@@ -34,5 +34,9 @@ module.exports.preregistration = function () {
       type: String,
       required: false,
     },
+    claim_100ccd: {
+      type: Boolean,
+      required: false,
+    },
   };
 };

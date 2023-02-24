@@ -17,6 +17,10 @@ router
   .route("/prerregistration/id/:id/account/:account")
   .put(validateSignature, validateAccount, preregistrationController.update);
 
+router
+    .route("/prerregistration/claimccd/:account")
+    .put(validateSignature, validateAccount, preregistrationController.claimccd);
+
 // Account routes
 const accountController = require("./controllers/accountController");
 router.route("/account/v1/:account/nonce").get(accountController.getNonce);
