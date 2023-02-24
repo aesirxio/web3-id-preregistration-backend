@@ -20,10 +20,6 @@ Backend for the pre-registration and share2earn of web3 id. Essentially it's a N
 
 - **CONCORDIUM_NODE**: You need a working URL of a JSON-RPC proxy server to a Concordium node (mainnet or testnet).
 - **CONCORDIUM_PORT**: Specify the working port of the previous server.
-- **SMARTCONTRACT_NAME**: The name specified in the smart contract when deployed.
-- **SMARTCONTRACT_INDEX**: An integer pointing the the index of the initialized smart contract.
-- **SMARTCONTRACT_SUBINDEX**: An integer pointing the the sub-index of the initialized smart contract.
-- **SMARTCONTRACT_RAWSCHEMA**: The schema of the Smart Contract. You can get this by executing `cargo concordium build --schema-base64-out - ` in the [Smart Contract](https://github.com/aesirxio/web3-demo-smart-contract) code.
 
 1. In case the DB credentials were changed, specify them in the [init/mongo-init.js](init/mongo-init.js) file to reflect the changes.
 1. Once you are done execute the `docker compose up -d` command to start the compose file.
