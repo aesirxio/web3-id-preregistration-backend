@@ -3,7 +3,7 @@ module.exports.preregistration = function () {
     id: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     name: {
       type: String,
@@ -12,7 +12,7 @@ module.exports.preregistration = function () {
     product: {
       type: String,
       required: true,
-      enum : ['community', 'starter', 'team', 'growth', 'enterprise']
+      enum: ["community", "starter", "team", "growth", "enterprise"],
     },
     organization: {
       type: String,
@@ -22,7 +22,7 @@ module.exports.preregistration = function () {
       type: String,
       required: false,
     },
-    order_id: {
+    orderId: {
       type: String,
       required: false,
     },
@@ -33,6 +33,10 @@ module.exports.preregistration = function () {
     account: {
       type: String,
       required: false,
+    },
+    dateReg: {
+      type: Date,
+      required: true,
     },
   };
 };

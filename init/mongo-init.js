@@ -9,4 +9,4 @@ db.createUser({
   ],
 });
 
-db.account.insert({ dummy: "x" });
+db.dummy.insert({ dummy: "x" });
