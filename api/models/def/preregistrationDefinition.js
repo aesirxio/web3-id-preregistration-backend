@@ -34,9 +34,22 @@ module.exports.preregistration = function () {
       type: String,
       required: false,
     },
+    share2earn: {
+      type: String,
+      required: false,
+    },
+    referred: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
     dateReg: {
       type: Date,
       required: true,
+    },
+    dateShare2Earn: {
+      type: Date,
+      required: false,
     },
   };
 };
