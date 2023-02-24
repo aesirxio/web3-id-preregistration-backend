@@ -12,7 +12,26 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      npm:
+        condition: service_completed_successfully
     command: [ 'npx', 'nodemon' ]
+    networks:
+      - backend
+
+  npm:
+    image: node:14-alpine
+    container_name: npm
+    volumes:
+      - type: bind
+        source: ./api
+        target: /app
+    working_dir: /app
+    restart: "no"
+    user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: [ 'npm', 'i' ]
     networks:
       - backend
 
