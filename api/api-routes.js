@@ -15,6 +15,7 @@ router.route("/preregistration").post(preregistrationController.add);
 // Account routes
 const accountController = require("./controllers/accountController");
 router.route("/account/v1/:account/nonce").get(accountController.getNonce);
+router.route("/prerregistration/id/:id/account/:account").put(accountController.update);
 
 
 // Export API routes
