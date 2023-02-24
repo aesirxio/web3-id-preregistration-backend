@@ -30,9 +30,5 @@ module.exports.preregistration = function () {
       type: String,
       required: false,
     },
-    account: {
-      type: String,
-      required: false,
-    },
   };
 };
