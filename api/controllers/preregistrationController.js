@@ -48,33 +48,6 @@ exports.update = async (req, res) => {
     const account   = req.params.account;
     const signature = req.query.signature;
 
-    // Validate missing signature
-    if (!signature)
-    {
-        res.status(406).json({error: "Missing signature"}).end();
-    }
-
-    // Validate signature not base64
-    if (!signature.match(/^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/))
-    {
-        res.status(406).json({error: "Signature not base64"}).end();
-    }
-
-    // Validate signature not json
-    try {
-        let isJson = JSON.parse(signature);
-
-        if (isJson && typeof isJson === "object") {
-            res.status(406).json({error: "Signature not json"}).end();
-        }
-    } catch (e) {}
-
-    // Validate the account's format
-    if (!account || !account.match(/^[a-zA-Z0-9]+$/))
-    {
-        res.status(500).json({error: "Account is not valid"}).end();
-    }
-
     // Validate account in collection
     Account.findOne({ address: account }, async (err, accountObj) => {
 
