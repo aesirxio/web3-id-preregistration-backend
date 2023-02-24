@@ -137,3 +137,7 @@ $RECYCLE.BIN/
 
 # PHP Storm
 .idea/
+
+# Certs
+/nginx/certs/*
+!/nginx/certs/*.dist
