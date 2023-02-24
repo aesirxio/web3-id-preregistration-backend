@@ -6,7 +6,7 @@ module.exports.account = function () {
     },
     nonce: {
       type: Number,
-      required: false,
+      required: true,
     },
   };
 };
