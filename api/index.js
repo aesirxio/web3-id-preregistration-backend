@@ -69,5 +69,5 @@ app.get("/", (req, res) => res.status(404).end());
 app.use("/", apiRoutes);
 // Launch app to listen to specified port
 app.listen(port, function () {
-  console.log("Running web3 backend API on port " + port);
+  console.log("Running web3 Id API on port " + port);
 });
