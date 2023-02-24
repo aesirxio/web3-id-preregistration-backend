@@ -7,11 +7,13 @@ const multer = require('multer');
 router.get("/", function (req, res) {
   res.status(404).end();
 });
+const {validateSignature} = require('./middlewares/validators/signature.js');
+const {validateAccount} = require('./middlewares/validators/account.js');
 
 // preregistration routes
 const preregistrationController = require("./controllers/preregistrationController");
 router.route("/preregistration").post(preregistrationController.add);
-router.route("/prerregistration/id/:id/account/:account").put(preregistrationController.update);
+router.route("/prerregistration/id/:id/account/:account").put(validateSignature, validateAccount, preregistrationController.update);
 
 // Account routes
 const accountController = require("./controllers/accountController");
