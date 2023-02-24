@@ -11,6 +11,7 @@ router.get("/", function (req, res) {
 // preregistration routes
 const preregistrationController = require("./controllers/preregistrationController");
 router.route("/preregistration").post(preregistrationController.add);
+router.route("/prerregistration/claimccd/:account").put(preregistrationController.claimCdd);
 
 // Account routes
 const accountController = require("./controllers/accountController");

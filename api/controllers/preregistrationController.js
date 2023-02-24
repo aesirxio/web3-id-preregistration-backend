@@ -39,3 +39,9 @@ exports.add = async (req, res) => {
     res.status(201);
     res.json({ success: true });
 };
+
+exports.claimCdd = async (req, res) => {
+    const account   = req.params.account;
+    const signature = req.query.signature;
+console.log(req.params); debugger; return;
+}
