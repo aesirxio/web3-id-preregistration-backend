@@ -205,7 +205,7 @@ exports.claimbeta = async (req, res) => {
       }
     })
 
-    // Increase the referred field
+    // Increase the referred field who refered
     let refShare2Earn = preregistrationObj.refShare2Earn;
 
     if (refShare2Earn) {
@@ -213,7 +213,7 @@ exports.claimbeta = async (req, res) => {
         let referred = preregistrationObj.referred;
 
         Preregistration.updateOne(
-            { id: req.body.id },
+            { share2earn: refShare2Earn },
             { referred:  referred + 1},
             () => {
               res.json({ result: true }).status(201).end();
