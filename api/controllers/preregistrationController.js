@@ -209,6 +209,8 @@ exports.claimbeta = async (req, res) => {
 
     if (refShare2Earn) {
       Preregistration.findOne({ share2earn: refShare2Earn }, (err, preregistrationObj) => {
+
+        if (preregistrationObj){
         let referred = preregistrationObj.referred;
 
         Preregistration.updateOne(
@@ -217,6 +219,7 @@ exports.claimbeta = async (req, res) => {
             () => {
               return res.json({ result: true }).status(201).end();
             });
+        }
       })
     }
     return res.json({ result: true }).status(201).end();
