@@ -183,7 +183,6 @@ exports.claimbeta = async (req, res) => {
 
     // Validate share2earn and beta
     if (preregistrationObj.share2earn !== null || preregistrationObj.beta === true) {
-      console.log(preregistrationObj.beta); debugger; return;
       res.status(406).end();
     }
     Preregistration.updateOne(
