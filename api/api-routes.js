@@ -13,16 +13,12 @@ const { validateAccount } = require("./middlewares/validators/account.js");
 const preregistrationController = require("./controllers/preregistrationController");
 router.route("/preregistration").post(preregistrationController.add);
 router
-  .route("/preregistration/id/:id/account/:account")
+  .route("/prerregistration/id/:id/account/:account")
   .put(validateSignature, validateAccount, preregistrationController.update);
 
 router
-    .route("/preregistration/claimbeta/:account")
+    .route("/prerregistration/claimbeta/:account")
     .put(validateSignature, validateAccount, preregistrationController.claimbeta);
-
-router
-    .route("/preregistration/share2earn/:account")
-    .get(validateAccount, preregistrationController.getShare2earn);
 
 // Account routes
 const accountController = require("./controllers/accountController");
