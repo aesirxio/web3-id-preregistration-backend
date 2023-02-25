@@ -219,7 +219,6 @@ exports.claimbeta = async (req, res) => {
             });
       })
     }
-    res.json({ result: true }).status(201).end();
   });
 };
 
@@ -239,6 +238,5 @@ exports.getShare2earn = async (req, res) => {
     if (preregistrationObj.share2earn) {
       res.status(200).json({result: preregistrationObj.share2earn}).end();
     }
-    res.status(404).json({result: 'Not found'}).end();
   })
 };

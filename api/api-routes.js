@@ -18,7 +18,7 @@ router
 
 router
     .route("/preregistration/claimbeta/:account")
-    .put(validateAccount, preregistrationController.claimbeta);
+    .put(validateSignature, validateAccount, preregistrationController.claimbeta);
 
 router
     .route("/preregistration/share2earn/:account")
