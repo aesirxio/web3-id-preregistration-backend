@@ -236,7 +236,7 @@ exports.getShare2earn = async (req, res) => {
     }
 
     if (preregistrationObj.share2earn) {
-      res.status(404).json({result: preregistrationObj.share2earn}).end();
+      res.status(200).json({result: preregistrationObj.share2earn}).end();
     }
   })
 };
