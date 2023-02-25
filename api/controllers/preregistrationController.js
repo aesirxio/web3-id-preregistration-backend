@@ -104,7 +104,7 @@ exports.update = async (req, res) => {
     ) {
       // Clear nonce in the account even signature verification failed
       Account.updateOne({ address: account }, { nonce: null }, () => {});
-      res.status(403).end();
+      return res.status(403).end();
     }
 
     // Clear nonce in the account after signature verification
@@ -131,7 +131,7 @@ exports.update = async (req, res) => {
       { id: req.params.id },
       { account: account },
       () => {
-        res.json({ result: true }).status(201).end();
+        return res.json({ result: true }).status(201).end();
       }
     );
   });
@@ -163,7 +163,7 @@ exports.claimbeta = async (req, res) => {
     ) {
       // Clear nonce in the account even signature verification failed
       Account.updateOne({ address: account }, { nonce: null }, () => {});
-      res.status(403).end();
+      return res.status(403).end();
     }
 
     // Clear nonce in the account after signature verification
@@ -215,11 +215,11 @@ exports.claimbeta = async (req, res) => {
             { share2earn: refShare2Earn },
             { referred:  referred + 1},
             () => {
-              res.json({ result: true }).status(201).end();
+              return res.json({ result: true }).status(201).end();
             });
       })
     }
-    res.json({ result: true }).status(201).end();
+    return res.json({ result: true }).status(201).end();
   });
 };
 
