@@ -221,3 +221,22 @@ exports.claimbeta = async (req, res) => {
     }
   });
 };
+
+exports.getShare2earn = async (req, res) => {
+  const account = req.params.account;
+
+  // Validate account in collection
+  Preregistration.findOne({account: account}, async (err, preregistrationObj) => {
+    if (err) {
+      res.status(500).end();
+    }
+
+    if (preregistrationObj === null) {
+      res.status(404).end();
+    }
+
+    if (preregistrationObj.share2earn) {
+      res.status(404).json({result: preregistrationObj.share2earn}).end();
+    }
+  })
+};
