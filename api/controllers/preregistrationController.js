@@ -136,3 +136,89 @@ exports.update = async (req, res) => {
     );
   });
 };
+
+exports.claimbeta = async (req, res) => {
+  const account = req.params.account;
+  const signature = req.query.signature;
+
+  // Validate account in collection
+  Account.findOne({ address: account }, async (err, accountObj) => {
+    if (err) {
+      res.status(500).end();
+    }
+
+    if (accountObj === null) {
+      res.status(404).end();
+    }
+
+    const nonce = accountObj.nonce;
+
+    // Validate signature by concordium
+    if (
+      !(await concordium.validateAccount(
+        String(nonce),
+        JSON.parse(Buffer.from(signature, "base64").toString()),
+        account
+      ))
+    ) {
+      // Clear nonce in the account even signature verification failed
+      Account.updateOne({ address: account }, { nonce: null }, () => {});
+      res.status(403).end();
+    }
+
+    // Clear nonce in the account after signature verification
+    Account.updateOne({ address: account }, { nonce: null }, () => {});
+  });
+
+  // Validate preregistration in collection
+  Preregistration.findOne({ id: req.body.id }, (err, preregistrationObj) => {
+    if (err) {
+      res.status(500).end();
+      return;
+    }
+
+    if (preregistrationObj === null) {
+      res.status(404).end();
+    }
+
+    // Validate share2earn and beta
+    if (preregistrationObj.share2earn !== null || preregistrationObj.beta === true) {
+      console.log(preregistrationObj.beta); debugger; return;
+      res.status(406).end();
+    }
+    Preregistration.updateOne(
+      { id: req.body.id },
+      { beta: true },
+      () => {}
+    );
+
+    // Validate ramdom code is unique
+    let alphanumeric = Math.random().toString(36).slice(2);
+
+    Preregistration.findOne({ share2earn: alphanumeric }, (err, preregistrationObj) => {
+      if (preregistrationObj === null)
+      {
+        Preregistration.updateOne(
+            { id: req.body.id },
+            { share2earn:  alphanumeric},
+            () => {});
+      }
+    })
+
+    // Increase the referred field
+    let refShare2Earn = preregistrationObj.refShare2Earn;
+
+    if (refShare2Earn) {
+      Preregistration.findOne({ share2earn: refShare2Earn }, (err, preregistrationObj) => {
+        let referred = preregistrationObj.referred;
+
+        Preregistration.updateOne(
+            { id: req.body.id },
+            { referred:  referred + 1},
+            () => {
+              res.json({ result: true }).status(201).end();
+            });
+      })
+    }
+  });
+};
