@@ -28,7 +28,6 @@ router
 // Account routes
 const accountController = require("./controllers/accountController");
 router.route("/account/:account/nonce").get(accountController.getNonce);
-router.route("/account/sign/:account").get(accountController.signMessage);
 
 // Export API routes
 module.exports = router;
