@@ -111,7 +111,7 @@ exports.update = async (req, res) => {
     }
 
     // Clear nonce in the account after signature verification
-    await Account.updateOne({ address: account }, { nonce: null }, () => {});
+    // await Account.updateOne({ address: account }, { nonce: null }, () => {});
 
     preregistrationObj = await Preregistration.findOne({
       id: req.params.id,
@@ -182,7 +182,7 @@ exports.list = async (req, res) => {
     }
 
     // Clear nonce in the account after signature verification
-    await Account.updateOne({ address: account }, { nonce: null }, () => {});
+    // await Account.updateOne({ address: account }, { nonce: null }, () => {});
 
     const preregistrationObj = await Preregistration.findOne({
       account: req.params.account,
@@ -274,6 +274,7 @@ exports.linkAesirX = async (req, res) => {
       {
         aesirXAccount: req.params.aesirXAccount,
         dateAesirXAccount: new Date(),
+        share2earn: crypto.randomBytes(16).toString("hex"),
       }
     );
 
