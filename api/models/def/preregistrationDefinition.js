@@ -5,7 +5,11 @@ module.exports.preregistration = function () {
       required: true,
       unique: true,
     },
-    name: {
+    first_name: {
+      type: String,
+      required: true,
+    },
+    sur_name: {
       type: String,
       required: true,
     },
