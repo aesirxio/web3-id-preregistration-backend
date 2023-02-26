@@ -43,11 +43,6 @@ module.exports.preregistration = function () {
       required: true,
       default: 0,
     },
-    referredAmount: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
     dateReg: {
       type: Date,
       required: true,

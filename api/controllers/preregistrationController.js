@@ -182,17 +182,12 @@ exports.list = async (req, res) => {
 
     if (preregistrationObj.referred && preregistrationObj.referred >= 6)
     {
-      return res.status(200).json({ referred: preregistrationObj.referred }).end();
+      preregistrationObj.referred = 6;
     }
 
-    Preregistration.updateOne(
-        { account: account},
-        { referredAmount: preregistrationObj.referred * 25 },
-        () => {
-          return res.json({ preregistrationObj }).status(200).end();
-        }
-    );
+    let objForm = preregistrationObj.toObject();
+    objForm.referredAmount = preregistrationObj.referred * 25;
 
-    return res.json({ preregistrationObj }).status(200).end();
+    return res.json({ objForm }).status(200).end();
   });
 };
