@@ -212,7 +212,7 @@ exports.activate = async (req, res) => {
     });
 
     if (preregistrationObj === null) {
-      return res.status(404).json({ error: "Invalid account" }).end();
+      return res.status(404).json({ error: "Id not found" }).end();
     }
 
     if (preregistrationObj.activationCode !== req.params.code) {
@@ -243,7 +243,7 @@ exports.linkAesirX = async (req, res) => {
     });
 
     if (preregistrationObj === null) {
-      return res.status(404).json({ error: "Invalid account" }).end();
+      return res.status(404).json({ error: "Id not found" }).end();
     }
 
     if (typeof preregistrationObj.aesirXAccount !== "undefined") {
