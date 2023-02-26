@@ -25,6 +25,7 @@ const dbUser = process.env.DBUSER || "web3idpre";
 const dbPass = process.env.DBPASS || "password";
 const dbHost = process.env.DBHOST || "localhost";
 const dbName = process.env.DBNAME || "web3idpre";
+const dbPort = process.env.DBPOPT || "27017";
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -49,6 +50,8 @@ mongoose
       dbPass +
       "@" +
       dbHost +
+      ":" +
+      dbPort +
       "/" +
       dbName +
       "?authSource=admin",
