@@ -5,6 +5,8 @@ const Account = require("../models/accountModel");
 const Concordium = require("../web3/concordium");
 const concordium = new Concordium();
 
+const crypto = require("crypto");
+
 exports.add = async (req, res) => {
   if (!req.body.id.match(/^@[a-z\d_]{3,20}$/i)) {
     return res.status(406).json({ error: "Invalid id" }).end();
@@ -47,12 +49,15 @@ exports.add = async (req, res) => {
     }
   }
 
+  const activationCode = crypto.randomBytes(16).toString("hex");
+
   const prereg = {
     id: req.body.id,
     first_name: req.body.first_name,
     sur_name: req.body.sur_name,
     product: req.body.product,
     dateReg: new Date(),
+    activationCode: activationCode,
   };
 
   ["organization", "message", "orderId", "refShare2Earn"].forEach((field) => {
@@ -77,7 +82,7 @@ exports.add = async (req, res) => {
   }
 
   res.status(201);
-  res.json({ success: true });
+  res.json({ success: true, code: activationCode });
 };
 
 exports.update = async (req, res) => {
@@ -157,11 +162,11 @@ exports.list = async (req, res) => {
 
     // Validate signature by concordium
     if (
-        !(await concordium.validateAccount(
-            String(nonce),
-            JSON.parse(Buffer.from(signature, "base64").toString()),
-            account
-        ))
+      !(await concordium.validateAccount(
+        String(nonce),
+        JSON.parse(Buffer.from(signature, "base64").toString()),
+        account
+      ))
     ) {
       // Clear nonce in the account even signature verification failed
       Account.updateOne({ address: account }, { nonce: null }, () => {});
@@ -182,8 +187,7 @@ exports.list = async (req, res) => {
       return res.status(404).end();
     }
 
-    if (preregistrationObj.referred && preregistrationObj.referred >= 6)
-    {
+    if (preregistrationObj.referred && preregistrationObj.referred >= 6) {
       preregistrationObj.referred = 6;
     }
 
