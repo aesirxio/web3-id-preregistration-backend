@@ -15,14 +15,19 @@ router.route("/preregistration").post(preregistrationController.add);
 router
   .route("/preregistration/id/:id/account/:account")
   .put(validateSignature, validateAccount, preregistrationController.update);
-
 router
-    .route("/preregistration/account/:account")
-    .get(validateSignature, validateAccount, preregistrationController.list);
+  .route("/preregistration/activation/:id/:code")
+  .put(preregistrationController.activate);
+router
+  .route("/preregistration/aesirx/:id/:aesirXAccount")
+  .put(preregistrationController.linkAesirX);
+router
+  .route("/preregistration/account/:account")
+  .get(validateSignature, validateAccount, preregistrationController.list);
 
 // Account routes
 const accountController = require("./controllers/accountController");
-router.route("/account/v1/:account/nonce").get(accountController.getNonce);
+router.route("/account/:account/nonce").get(accountController.getNonce);
 
 // Export API routes
 module.exports = router;

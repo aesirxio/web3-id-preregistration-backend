@@ -34,6 +34,14 @@ module.exports.preregistration = function () {
       type: String,
       required: false,
     },
+    activationCode: {
+      type: String,
+      required: true,
+    },
+    aesirXAccount: {
+      type: String,
+      required: false,
+    },
     account: {
       type: String,
       required: false,
@@ -51,7 +59,15 @@ module.exports.preregistration = function () {
       type: Date,
       required: true,
     },
-    dateShare2Earn: {
+    dateActivation: {
+      type: Date,
+      required: false,
+    },
+    dateAesirXAccount: {
+      type: Date,
+      required: false,
+    },
+    dateAccount: {
       type: Date,
       required: false,
     },

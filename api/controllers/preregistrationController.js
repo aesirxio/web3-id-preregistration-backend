@@ -5,6 +5,8 @@ const Account = require("../models/accountModel");
 const Concordium = require("../web3/concordium");
 const concordium = new Concordium();
 
+const crypto = require("crypto");
+
 exports.add = async (req, res) => {
   if (!req.body.id.match(/^@[a-z\d_]{3,20}$/i)) {
     return res.status(406).json({ error: "Invalid id" }).end();
@@ -47,12 +49,15 @@ exports.add = async (req, res) => {
     }
   }
 
+  const activationCode = crypto.randomBytes(16).toString("hex");
+
   const prereg = {
     id: req.body.id,
     first_name: req.body.first_name,
     sur_name: req.body.sur_name,
     product: req.body.product,
     dateReg: new Date(),
+    activationCode: activationCode,
   };
 
   ["organization", "message", "orderId", "refShare2Earn"].forEach((field) => {
@@ -69,7 +74,6 @@ exports.add = async (req, res) => {
   }
 
   if (referrer !== null) {
-    console.log(referrer);
     await Preregistration.updateOne(
       { id: referrer.id },
       { referred: referrer.referred + 1 }
@@ -77,21 +81,18 @@ exports.add = async (req, res) => {
   }
 
   res.status(201);
-  res.json({ success: true });
+  res.json({ success: true, code: activationCode });
 };
 
 exports.update = async (req, res) => {
   const account = req.params.account;
   const signature = req.query.signature;
 
-  // Validate account in collection
-  Account.findOne({ address: account }, async (err, accountObj) => {
-    if (err) {
-      res.status(500).end();
-    }
+  try {
+    const accountObj = await Account.findOne({ address: account });
 
     if (accountObj === null) {
-      res.status(404).end();
+      return res.status(404).json({ error: "Account not found" }).end();
     }
 
     const nonce = accountObj.nonce;
@@ -99,91 +100,99 @@ exports.update = async (req, res) => {
     // Validate signature by concordium
     if (
       !(await concordium.validateAccount(
-        String(nonce),
+        nonce.toString(),
         JSON.parse(Buffer.from(signature, "base64").toString()),
         account
       ))
     ) {
       // Clear nonce in the account even signature verification failed
-      Account.updateOne({ address: account }, { nonce: null }, () => {});
-      res.status(403).end();
+      await Account.updateOne({ address: account }, { nonce: null }, () => {});
+      return res.status(403).json({ error: "wtf" }).end();
     }
 
     // Clear nonce in the account after signature verification
-    Account.updateOne({ address: account }, { nonce: null }, () => {});
-  });
+    await Account.updateOne({ address: account }, { nonce: null }, () => {});
 
-  // Validate preregistration in collection
-  Preregistration.findOne({ id: req.params.id }, (err, preregistrationObj) => {
-    if (err) {
-      res.status(500).end();
-      return;
-    }
+    preregistrationObj = await Preregistration.findOne({
+      id: req.params.id,
+    });
 
     if (preregistrationObj === null) {
-      res.status(404).end();
+      return res.status(404).json({ error: "Id not found" }).end();
     }
 
     // Validate Id already linked to another account
-    if (preregistrationObj.account && preregistrationObj.account !== account) {
-      res.status(406).end();
+    if (typeof preregistrationObj.account !== "undefined") {
+      return res
+        .status(406)
+        .json({ error: "Id already linked to an account" })
+        .end();
+    }
+
+    if (
+      (await Preregistration.findOne({
+        account: account,
+      })) !== null
+    ) {
+      return res
+        .status(406)
+        .json({
+          error: "This account has been linked to a different registration",
+        })
+        .end();
     }
 
     Preregistration.updateOne(
       { id: req.params.id },
-      { account: account },
+      { account: account, dateAccount: new Date() },
       () => {
-        res.json({ result: true }).status(201).end();
+        return res.json({ result: true }).status(201).end();
       }
     );
-  });
+  } catch (e) {
+    return res.status(500).json().end();
+  }
 };
 
 exports.list = async (req, res) => {
   const account = req.params.account;
   const signature = req.query.signature;
 
-  // Validate account in collection
-  Account.findOne({ address: account }, async (err, accountObj) => {
-    if (err) {
-      return res.status(500).end();
-    }
+  try {
+    // Validate account in collection
+    const accountObj = await Account.findOne({ address: account });
 
     if (accountObj === null) {
-      return res.status(404).end();
+      return res.status(404).json({ error: "Account not found" }).end();
     }
 
     const nonce = accountObj.nonce;
 
     // Validate signature by concordium
     if (
-        !(await concordium.validateAccount(
-            String(nonce),
-            JSON.parse(Buffer.from(signature, "base64").toString()),
-            account
-        ))
+      !(await concordium.validateAccount(
+        nonce.toString(),
+        JSON.parse(Buffer.from(signature, "base64").toString()),
+        account
+      ))
     ) {
       // Clear nonce in the account even signature verification failed
-      Account.updateOne({ address: account }, { nonce: null }, () => {});
-      return res.status(403).end();
+      await Account.updateOne({ address: account }, { nonce: null }, () => {});
+      return res.status(403).json({ error: "wtf" }).end();
     }
 
     // Clear nonce in the account after signature verification
-    Account.updateOne({ address: account }, { nonce: null }, () => {});
-  });
+    await Account.updateOne({ address: account }, { nonce: null }, () => {});
 
-  // Validate preregistration in collection
-  Preregistration.findOne({ account: account }, (err, preregistrationObj) => {
-    if (err) {
-      return res.status(500).end();
-    }
+    const preregistrationObj = await Preregistration.findOne({
+      account: req.params.account,
+    });
 
     if (preregistrationObj === null) {
-      return res.status(404).end();
+      return res.status(404).json({ error: "Account not found" }).end();
     }
 
-    if (preregistrationObj.referred && preregistrationObj.referred >= 6)
-    {
+    if (preregistrationObj.referred && preregistrationObj.referred >= 6) {
       preregistrationObj.referred = 6;
     }
 
@@ -191,5 +200,85 @@ exports.list = async (req, res) => {
     objForm.referredAmount = preregistrationObj.referred * 25;
 
     return res.json({ objForm }).status(200).end();
-  });
+  } catch (e) {
+    return res.status(500).json({ error: e.message }).end();
+  }
+};
+
+exports.activate = async (req, res) => {
+  try {
+    const preregistrationObj = await Preregistration.findOne({
+      id: req.params.id,
+    });
+
+    if (preregistrationObj === null) {
+      return res.status(404).json({ error: "Invalid account" }).end();
+    }
+
+    if (preregistrationObj.activationCode !== req.params.code) {
+      return res.status(406).json({ error: "Invalid activation code" }).end();
+    }
+
+    if (typeof preregistrationObj.dateActivation !== "undefined") {
+      return res.status(406).json({ error: "Registered" }).end();
+    }
+
+    await Preregistration.updateOne(
+      {
+        id: req.params.id,
+      },
+      { dateActivation: new Date() }
+    );
+
+    return res.status(201).end();
+  } catch {
+    return res.status(500).end();
+  }
+};
+
+exports.linkAesirX = async (req, res) => {
+  try {
+    const preregistrationObj = await Preregistration.findOne({
+      id: req.params.id,
+    });
+
+    if (preregistrationObj === null) {
+      return res.status(404).json({ error: "Invalid account" }).end();
+    }
+
+    if (typeof preregistrationObj.aesirXAccount !== "undefined") {
+      return res
+        .status(406)
+        .json({ error: "This id has an AesirX account linked already" })
+        .end();
+    }
+
+    if (
+      (await Preregistration.findOne({
+        aesirXAccount: req.params.aesirXAccount,
+      })) !== null
+    ) {
+      return res
+        .status(406)
+        .json({
+          error:
+            "This AesirX account has been linked to a different registration",
+        })
+        .end();
+    }
+
+    await Preregistration.updateOne(
+      {
+        id: req.params.id,
+      },
+      {
+        aesirXAccount: req.params.aesirXAccount,
+        dateAesirXAccount: new Date(),
+      }
+    );
+
+    return res.status(201).end();
+  } catch {
+    return res.status(500).end();
+  }
 };

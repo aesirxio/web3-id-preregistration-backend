@@ -12,6 +12,7 @@ const {
   signTransaction,
   serializeUpdateContractParameters,
   getAccountTransactionHash,
+  signMessage,
 } = require("@concordium/node-sdk");
 const fs = require("fs");
 
@@ -141,6 +142,11 @@ class Concordium {
         transactionSignature
       );
     }
+  }
+
+  async sign(message) {
+    const signer = buildBasicAccountSigner(this.ownerPrivateKey);
+    return await signMessage(this.ownerAccount, message, signer);
   }
 }
 

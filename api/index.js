@@ -21,10 +21,10 @@ app.use(
 
 // Setup environment variables
 const port = process.env.PORT || 3000;
-const dbUser = process.env.DBUSER || "web3Id";
-const dbPass = process.env.DBPASS || "demo";
+const dbUser = process.env.DBUSER || "web3idpre";
+const dbPass = process.env.DBPASS || "password";
 const dbHost = process.env.DBHOST || "localhost";
-const dbName = process.env.DBNAME || "web3Id";
+const dbName = process.env.DBNAME || "web3idpre";
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
