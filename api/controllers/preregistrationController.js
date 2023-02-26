@@ -74,7 +74,6 @@ exports.add = async (req, res) => {
   }
 
   if (referrer !== null) {
-    console.log(referrer);
     await Preregistration.updateOne(
       { id: referrer.id },
       { referred: referrer.referred + 1 }
@@ -196,4 +195,35 @@ exports.list = async (req, res) => {
 
     return res.json({ objForm }).status(200).end();
   });
+};
+
+exports.activate = async (req, res) => {
+  try {
+    const preregistrationObj = await Preregistration.findOne({
+      id: req.params.id,
+    });
+
+    if (preregistrationObj === null) {
+      return res.status(404).json({ error: "Invalid account" }).end();
+    }
+
+    if (preregistrationObj.activationCode !== req.params.code) {
+      return res.status(406).json({ error: "Invalid activation code" }).end();
+    }
+
+    if (typeof preregistrationObj.dateActivation !== "undefined") {
+      return res.status(406).json({ error: "Registered" }).end();
+    }
+
+    await Preregistration.updateOne(
+      {
+        id: req.params.id,
+      },
+      { dateActivation: new Date() }
+    );
+
+    return res.status(201).end();
+  } catch {
+    return res.status(500).end();
+  }
 };

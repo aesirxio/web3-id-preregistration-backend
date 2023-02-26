@@ -15,6 +15,9 @@ router.route("/preregistration").post(preregistrationController.add);
 router
   .route("/preregistration/id/:id/account/:account")
   .put(validateSignature, validateAccount, preregistrationController.update);
+router
+  .route("/preregistration/activation/:id/:code")
+  .put(preregistrationController.activate);
 
 router
   .route("/preregistration/account/:account")
