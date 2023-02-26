@@ -227,3 +227,50 @@ exports.activate = async (req, res) => {
     return res.status(500).end();
   }
 };
+
+exports.linkAesirX = async (req, res) => {
+  try {
+    const preregistrationObj = await Preregistration.findOne({
+      id: req.params.id,
+    });
+
+    if (preregistrationObj === null) {
+      return res.status(404).json({ error: "Invalid account" }).end();
+    }
+
+    if (typeof preregistrationObj.aesirXAccount !== "undefined") {
+      return res
+        .status(406)
+        .json({ error: "This id has an AesirX account linked already" })
+        .end();
+    }
+
+    if (
+      (await Preregistration.findOne({
+        aesirXAccount: req.params.aesirXAccount,
+      })) !== null
+    ) {
+      return res
+        .status(406)
+        .json({
+          error:
+            "This AesirX account has been linked to a different registration",
+        })
+        .end();
+    }
+
+    await Preregistration.updateOne(
+      {
+        id: req.params.id,
+      },
+      {
+        aesirXAccount: req.params.aesirXAccount,
+        dateAesirXAccount: new Date(),
+      }
+    );
+
+    return res.status(201).end();
+  } catch {
+    return res.status(500).end();
+  }
+};

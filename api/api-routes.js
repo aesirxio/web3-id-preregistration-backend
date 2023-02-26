@@ -18,6 +18,9 @@ router
 router
   .route("/preregistration/activation/:id/:code")
   .put(preregistrationController.activate);
+router
+  .route("/preregistration/aesirx/:id/:aesirXAccount")
+  .put(preregistrationController.linkAesirX);
 
 router
   .route("/preregistration/account/:account")

@@ -38,6 +38,10 @@ module.exports.preregistration = function () {
       type: String,
       required: true,
     },
+    aesirXAccount: {
+      type: String,
+      required: false,
+    },
     account: {
       type: String,
       required: false,
@@ -56,6 +60,10 @@ module.exports.preregistration = function () {
       required: true,
     },
     dateActivation: {
+      type: Date,
+      required: false,
+    },
+    dateAesirXAccount: {
       type: Date,
       required: false,
     },
