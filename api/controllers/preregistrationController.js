@@ -17,7 +17,8 @@ exports.add = async (req, res) => {
   Object.entries(req.body).forEach(([key, val]) => {
     const typeString = [
       "id",
-      "name",
+      "first_name",
+      "sur_name",
       "email",
       "organization",
       "message",
@@ -48,7 +49,8 @@ exports.add = async (req, res) => {
 
   const prereg = {
     id: req.body.id,
-    name: req.body.name,
+    first_name: req.body.first_name,
+    sur_name: req.body.sur_name,
     product: req.body.product,
     dateReg: new Date(),
   };
