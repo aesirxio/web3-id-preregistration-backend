@@ -136,3 +136,58 @@ exports.update = async (req, res) => {
     );
   });
 };
+
+exports.list = async (req, res) => {
+  const account = req.params.account;
+  const signature = req.query.signature;
+
+  // Validate account in collection
+  Account.findOne({ address: account }, async (err, accountObj) => {
+    if (err) {
+      return res.status(500).end();
+    }
+
+    if (accountObj === null) {
+      return res.status(404).end();
+    }
+
+    const nonce = accountObj.nonce;
+
+    // Validate signature by concordium
+    if (
+        !(await concordium.validateAccount(
+            String(nonce),
+            JSON.parse(Buffer.from(signature, "base64").toString()),
+            account
+        ))
+    ) {
+      // Clear nonce in the account even signature verification failed
+      Account.updateOne({ address: account }, { nonce: null }, () => {});
+      return res.status(403).end();
+    }
+
+    // Clear nonce in the account after signature verification
+    Account.updateOne({ address: account }, { nonce: null }, () => {});
+  });
+
+  // Validate preregistration in collection
+  Preregistration.findOne({ account: account }, (err, preregistrationObj) => {
+    if (err) {
+      return res.status(500).end();
+    }
+
+    if (preregistrationObj === null) {
+      return res.status(404).end();
+    }
+
+    if (preregistrationObj.referred && preregistrationObj.referred >= 6)
+    {
+      preregistrationObj.referred = 6;
+    }
+
+    let objForm = preregistrationObj.toObject();
+    objForm.referredAmount = preregistrationObj.referred * 25;
+
+    return res.json({ objForm }).status(200).end();
+  });
+};
