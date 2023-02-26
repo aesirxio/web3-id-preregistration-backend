@@ -110,14 +110,16 @@ exports.update = async (req, res) => {
       return res.status(403).json({ error: "wtf" }).end();
     }
 
-    preregistrationObj = await Preregistration.findOne({ id: req.params.id });
+    // Clear nonce in the account after signature verification
+    await Account.updateOne({ address: account }, { nonce: null }, () => {});
+
+    preregistrationObj = await Preregistration.findOne({
+      id: req.params.id,
+    });
 
     if (preregistrationObj === null) {
       return res.status(404).json({ error: "Id not found" }).end();
     }
-
-    // Clear nonce in the account after signature verification
-    await Account.updateOne({ address: account }, { nonce: null }, () => {});
 
     // Validate Id already linked to another account
     if (typeof preregistrationObj.account !== "undefined") {
@@ -148,7 +150,7 @@ exports.update = async (req, res) => {
       }
     );
   } catch (e) {
-    return res.status(500).json({ error: e.message }).end();
+    return res.status(500).json().end();
   }
 };
 
@@ -156,14 +158,12 @@ exports.list = async (req, res) => {
   const account = req.params.account;
   const signature = req.query.signature;
 
-  // Validate account in collection
-  Account.findOne({ address: account }, async (err, accountObj) => {
-    if (err) {
-      return res.status(500).end();
-    }
+  try {
+    // Validate account in collection
+    const accountObj = await Account.findOne({ address: account });
 
     if (accountObj === null) {
-      return res.status(404).end();
+      return res.status(404).json({ error: "Account not found" }).end();
     }
 
     const nonce = accountObj.nonce;
@@ -171,28 +171,25 @@ exports.list = async (req, res) => {
     // Validate signature by concordium
     if (
       !(await concordium.validateAccount(
-        String(nonce),
+        nonce.toString(),
         JSON.parse(Buffer.from(signature, "base64").toString()),
         account
       ))
     ) {
       // Clear nonce in the account even signature verification failed
-      Account.updateOne({ address: account }, { nonce: null }, () => {});
-      return res.status(403).end();
+      await Account.updateOne({ address: account }, { nonce: null }, () => {});
+      return res.status(403).json({ error: "wtf" }).end();
     }
 
     // Clear nonce in the account after signature verification
-    Account.updateOne({ address: account }, { nonce: null }, () => {});
-  });
+    await Account.updateOne({ address: account }, { nonce: null }, () => {});
 
-  // Validate preregistration in collection
-  Preregistration.findOne({ account: account }, (err, preregistrationObj) => {
-    if (err) {
-      return res.status(500).end();
-    }
+    const preregistrationObj = await Preregistration.findOne({
+      account: req.params.account,
+    });
 
     if (preregistrationObj === null) {
-      return res.status(404).end();
+      return res.status(404).json({ error: "Account not found" }).end();
     }
 
     if (preregistrationObj.referred && preregistrationObj.referred >= 6) {
@@ -203,7 +200,9 @@ exports.list = async (req, res) => {
     objForm.referredAmount = preregistrationObj.referred * 25;
 
     return res.json({ objForm }).status(200).end();
-  });
+  } catch (e) {
+    return res.status(500).json({ error: e.message }).end();
+  }
 };
 
 exports.activate = async (req, res) => {
