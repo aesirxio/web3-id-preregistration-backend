@@ -144,7 +144,11 @@ exports.update = async (req, res) => {
 
     Preregistration.updateOne(
       { id: req.params.id },
-      { account: account, dateAccount: new Date() },
+      {
+        account: account,
+        dateAccount: new Date(),
+        share2earn: crypto.randomBytes(16).toString("hex"),
+      },
       () => {
         return res.json({ result: true }).status(201).end();
       }
@@ -274,7 +278,6 @@ exports.linkAesirX = async (req, res) => {
       {
         aesirXAccount: req.params.aesirXAccount,
         dateAesirXAccount: new Date(),
-        share2earn: crypto.randomBytes(16).toString("hex"),
       }
     );
 
