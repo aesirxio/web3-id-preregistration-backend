@@ -88,14 +88,11 @@ exports.update = async (req, res) => {
   const account = req.params.account;
   const signature = req.query.signature;
 
-  // Validate account in collection
-  Account.findOne({ address: account }, async (err, accountObj) => {
-    if (err) {
-      res.status(500).end();
-    }
+  try {
+    const accountObj = await Account.findOne({ address: account });
 
     if (accountObj === null) {
-      res.status(404).end();
+      return res.status(404).json({ error: "Account not found" }).end();
     }
 
     const nonce = accountObj.nonce;
@@ -103,44 +100,56 @@ exports.update = async (req, res) => {
     // Validate signature by concordium
     if (
       !(await concordium.validateAccount(
-        String(nonce),
+        nonce.toString(),
         JSON.parse(Buffer.from(signature, "base64").toString()),
         account
       ))
     ) {
       // Clear nonce in the account even signature verification failed
-      Account.updateOne({ address: account }, { nonce: null }, () => {});
-      res.status(403).end();
+      await Account.updateOne({ address: account }, { nonce: null }, () => {});
+      return res.status(403).json({ error: "wtf" }).end();
+    }
+
+    preregistrationObj = await Preregistration.findOne({ id: req.params.id });
+
+    if (preregistrationObj === null) {
+      return res.status(404).json({ error: "Id not found" }).end();
     }
 
     // Clear nonce in the account after signature verification
-    Account.updateOne({ address: account }, { nonce: null }, () => {});
-  });
-
-  // Validate preregistration in collection
-  Preregistration.findOne({ id: req.params.id }, (err, preregistrationObj) => {
-    if (err) {
-      res.status(500).end();
-      return;
-    }
-
-    if (preregistrationObj === null) {
-      res.status(404).end();
-    }
+    await Account.updateOne({ address: account }, { nonce: null }, () => {});
 
     // Validate Id already linked to another account
-    if (preregistrationObj.account && preregistrationObj.account !== account) {
-      res.status(406).end();
+    if (typeof preregistrationObj.account !== "undefined") {
+      return res
+        .status(406)
+        .json({ error: "Id already linked to an account" })
+        .end();
+    }
+
+    if (
+      (await Preregistration.findOne({
+        account: account,
+      })) !== null
+    ) {
+      return res
+        .status(406)
+        .json({
+          error: "This account has been linked to a different registration",
+        })
+        .end();
     }
 
     Preregistration.updateOne(
       { id: req.params.id },
-      { account: account },
+      { account: account, dateAccount: new Date() },
       () => {
-        res.json({ result: true }).status(201).end();
+        return res.json({ result: true }).status(201).end();
       }
     );
-  });
+  } catch (e) {
+    return res.status(500).json({ error: e.message }).end();
+  }
 };
 
 exports.list = async (req, res) => {

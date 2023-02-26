@@ -21,14 +21,14 @@ router
 router
   .route("/preregistration/aesirx/:id/:aesirXAccount")
   .put(preregistrationController.linkAesirX);
-
 router
   .route("/preregistration/account/:account")
   .get(validateSignature, validateAccount, preregistrationController.list);
 
 // Account routes
 const accountController = require("./controllers/accountController");
-router.route("/account/v1/:account/nonce").get(accountController.getNonce);
+router.route("/account/:account/nonce").get(accountController.getNonce);
+router.route("/account/sign/:account").get(accountController.signMessage);
 
 // Export API routes
 module.exports = router;
