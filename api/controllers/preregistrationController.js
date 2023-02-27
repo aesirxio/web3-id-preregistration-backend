@@ -106,12 +106,12 @@ exports.update = async (req, res) => {
       ))
     ) {
       // Clear nonce in the account even signature verification failed
-      await Account.updateOne({ address: account }, { nonce: null }, () => {});
+      await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
       return res.status(403).json({ error: "wtf" }).end();
     }
 
     // Clear nonce in the account after signature verification
-    // await Account.updateOne({ address: account }, { nonce: null }, () => {});
+    await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
 
     preregistrationObj = await Preregistration.findOne({
       id: req.params.id,
@@ -181,12 +181,12 @@ exports.list = async (req, res) => {
       ))
     ) {
       // Clear nonce in the account even signature verification failed
-      await Account.updateOne({ address: account }, { nonce: null }, () => {});
+      await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
       return res.status(403).json({ error: "wtf" }).end();
     }
 
     // Clear nonce in the account after signature verification
-    // await Account.updateOne({ address: account }, { nonce: null }, () => {});
+    await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
 
     const preregistrationObj = await Preregistration.findOne({
       account: req.params.account,
