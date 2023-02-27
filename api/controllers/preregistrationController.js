@@ -244,21 +244,25 @@ exports.activate = async (req, res) => {
 exports.linkAesirX = async (req, res) => {
   try {
     const aesirxEndpoint = process.env.AESIRX_API_ENDOINT;
-
-    axios.post( aesirxEndpoint + '/index.php?webserviceClient=site&webserviceVersion=1.0.0&option=member&task=checkUsername&api=hal', {
-      data: {username: req.params.aesirXAccount},
-    })
-        .then(function (response) {
-          const data = response.data;
-
-          if (data.result.result === true || data.result.content_id === 'username_is_valid')
-          {
-            return res.status(406).json({ error: "AesirX account doesn't exist" }).end();
-          }
+    const sendPostRequest = async () => {
+      try {
+        const resp = await axios.post(`${aesirxEndpoint}/index.php?webserviceClient=site&webserviceVersion=1.0.0&option=member&task=checkUsername&api=hal`, {
+          data: {username: req.params.aesirXAccount},
         })
-        .catch(function (error) {
-          return res.status(404).json({ error: "Cannot validate aesirX account" }).end();
-        });
+
+        const data = resp.data;
+
+        if (data.result.result === true || data.result.content_id === 'username_is_valid')
+        {
+          return res.status(406).json({ error: "AesirX account doesn't exist" }).end();
+        }
+
+      } catch (err) {
+        return res.status(404).json({ error: "Cannot validate aesirX account" }).end();
+      }
+    }
+
+    sendPostRequest();
 
     const preregistrationObj = await Preregistration.findOne({
       id: req.params.id,
