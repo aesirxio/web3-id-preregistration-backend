@@ -6,6 +6,7 @@ const Concordium = require("../web3/concordium");
 const concordium = new Concordium();
 
 const crypto = require("crypto");
+const axios = require('axios');
 
 exports.add = async (req, res) => {
   if (!req.body.id.match(/^@[a-z\d_]{3,20}$/i)) {
@@ -242,6 +243,23 @@ exports.activate = async (req, res) => {
 
 exports.linkAesirX = async (req, res) => {
   try {
+    const aesirxEndpoint = process.env.AESIRX_API_ENDOINT;
+
+    axios.post( aesirxEndpoint + '/index.php?webserviceClient=site&webserviceVersion=1.0.0&option=member&task=checkUsername&api=hal', {
+      data: {username: req.params.aesirXAccount},
+    })
+        .then(function (response) {
+          const data = response.data;
+
+          if (data.result.result === true || data.result.content_id === 'username_is_valid')
+          {
+            return res.status(406).json({ error: "AesirX account doesn't exist" }).end();
+          }
+        })
+        .catch(function (error) {
+          return res.status(404).json({ error: "Cannot validate aesirX account" }).end();
+        });
+
     const preregistrationObj = await Preregistration.findOne({
       id: req.params.id,
     });
