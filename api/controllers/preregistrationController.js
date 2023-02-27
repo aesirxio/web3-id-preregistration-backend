@@ -5,8 +5,9 @@ const Account = require("../models/accountModel");
 const Concordium = require("../web3/concordium");
 const concordium = new Concordium();
 
-const crypto = require("crypto");
-const axios = require('axios');
+const crypto  = require("crypto");
+const axios   = require('axios');
+const webhook = process.env.INCOMMING_WEBHOOK;
 
 exports.add = async (req, res) => {
   if (!req.body.id.match(/^@[a-z\d_]{3,20}$/i)) {
@@ -80,6 +81,16 @@ exports.add = async (req, res) => {
       { referred: referrer.referred + 1 }
     );
   }
+  const sendSlack = async () => {
+    try {
+      const resp = await axios.post(`${webhook}`, {
+        text: `Someone registered successfully`,
+      })
+    } catch (err) {
+      return res.status(404).json({ error: "Cannot send message" }).end();
+    }
+  }
+  sendSlack();
 
   res.status(201);
   res.json({ success: true, code: activationCode });
@@ -234,6 +245,16 @@ exports.activate = async (req, res) => {
       },
       { dateActivation: new Date() }
     );
+    const sendSlack = async () => {
+      try {
+        const resp = await axios.post(`${webhook}`, {
+          text: `Someone activated successfully`,
+        })
+      } catch (err) {
+        return res.status(404).json({ error: "Cannot send message" }).end();
+      }
+    }
+    sendSlack();
 
     return res.status(201).end();
   } catch {
@@ -302,6 +323,16 @@ exports.linkAesirX = async (req, res) => {
         dateAesirXAccount: new Date(),
       }
     );
+    const sendSlack = async () => {
+      try {
+        const resp = await axios.post(`${webhook}`, {
+          text: `Someone linked AesirX successfully`,
+        })
+      } catch (err) {
+        return res.status(404).json({ error: "Cannot send message" }).end();
+      }
+    }
+    sendSlack();
 
     return res.status(201).end();
   } catch {
