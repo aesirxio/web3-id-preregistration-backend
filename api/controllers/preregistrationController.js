@@ -87,7 +87,6 @@ exports.add = async (req, res) => {
 
 exports.update = async (req, res) => {
   const account = req.params.account;
-  const signature = req.query.signature;
 
   try {
     const accountObj = await Account.findOne({ address: account });
@@ -95,24 +94,6 @@ exports.update = async (req, res) => {
     if (accountObj === null) {
       return res.status(404).json({ error: "Account not found" }).end();
     }
-
-    const nonce = accountObj.nonce;
-
-    // Validate signature by concordium
-    if (
-      !(await concordium.validateAccount(
-        nonce.toString(),
-        JSON.parse(Buffer.from(signature, "base64").toString()),
-        account
-      ))
-    ) {
-      // Clear nonce in the account even signature verification failed
-      await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
-      return res.status(403).json({ error: "Signature verification failed" }).end();
-    }
-
-    // Clear nonce in the account after signature verification
-    await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
 
     preregistrationObj = await Preregistration.findOne({
       id: req.params.id,
@@ -161,7 +142,6 @@ exports.update = async (req, res) => {
 
 exports.list = async (req, res) => {
   const account = req.params.account;
-  const signature = req.query.signature;
 
   try {
     // Validate account in collection
@@ -170,24 +150,6 @@ exports.list = async (req, res) => {
     if (accountObj === null) {
       return res.status(404).json({ error: "Account not found" }).end();
     }
-
-    const nonce = accountObj.nonce;
-
-    // Validate signature by concordium
-    if (
-      !(await concordium.validateAccount(
-        nonce.toString(),
-        JSON.parse(Buffer.from(signature, "base64").toString()),
-        account
-      ))
-    ) {
-      // Clear nonce in the account even signature verification failed
-      await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
-      return res.status(403).json({ error: "Signature verification failed" }).end();
-    }
-
-    // Clear nonce in the account after signature verification
-    await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
 
     const preregistrationObj = await Preregistration.findOne({
       account: req.params.account,
@@ -311,7 +273,6 @@ exports.linkAesirX = async (req, res) => {
 
 exports.updateInfo = async (req, res) => {
   const account   = req.params.account;
-  const signature = req.query.signature;
 
   try {
     preregistrationObj = await Preregistration.findOne({
@@ -326,28 +287,9 @@ exports.updateInfo = async (req, res) => {
       return res.status(406).json({ error: "Invalid id" }).end();
     }
 
-    if (req.body.product.trim() !== "community" && !req.body.orderId) {
+    if (req.body.product && (req.body.product !== "community" && !req.body.orderId)) {
       return res.status(406).json({ error: "Order id is required" }).end();
     }
-
-    const accountObj = await Account.findOne({ address: account });
-    const nonce      = accountObj.nonce;
-
-    // Validate signature by concordium
-    if (
-        !(await concordium.validateAccount(
-            nonce.toString(),
-            JSON.parse(Buffer.from(signature, "base64").toString()),
-            account
-        ))
-    ) {
-      // Clear nonce in the account even signature verification failed
-      await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
-      return res.status(403).json({ error: "Signature verification failed" }).end();
-    }
-
-    // Clear nonce in the account after signature verification
-    await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
 
     const typeString = [
       "id",
@@ -373,7 +315,6 @@ exports.updateInfo = async (req, res) => {
       if (!typeString.includes(key) || !data[key]) {
        delete data[key];
       }
-
     });
 
     Preregistration.updateOne(
