@@ -7,7 +7,6 @@ const concordium = new Concordium();
 
 const crypto  = require("crypto");
 const axios   = require('axios');
-const res = require("express/lib/response");
 const webhook = process.env.INCOMMING_WEBHOOK;
 
 exports.add = async (req, res) => {
@@ -91,7 +90,6 @@ exports.add = async (req, res) => {
 
 exports.update = async (req, res) => {
   const account = req.params.account;
-  const signature = req.query.signature;
 
   try {
     const accountObj = await Account.findOne({ address: account });
@@ -99,24 +97,6 @@ exports.update = async (req, res) => {
     if (accountObj === null) {
       return res.status(404).json({ error: "Account not found" }).end();
     }
-
-    const nonce = accountObj.nonce;
-
-    // Validate signature by concordium
-    if (
-      !(await concordium.validateAccount(
-        nonce.toString(),
-        JSON.parse(Buffer.from(signature, "base64").toString()),
-        account
-      ))
-    ) {
-      // Clear nonce in the account even signature verification failed
-      await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
-      return res.status(403).json({ error: "wtf" }).end();
-    }
-
-    // Clear nonce in the account after signature verification
-    await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
 
     preregistrationObj = await Preregistration.findOne({
       id: req.params.id,
@@ -165,7 +145,6 @@ exports.update = async (req, res) => {
 
 exports.list = async (req, res) => {
   const account = req.params.account;
-  const signature = req.query.signature;
 
   try {
     // Validate account in collection
@@ -174,24 +153,6 @@ exports.list = async (req, res) => {
     if (accountObj === null) {
       return res.status(404).json({ error: "Account not found" }).end();
     }
-
-    const nonce = accountObj.nonce;
-
-    // Validate signature by concordium
-    if (
-      !(await concordium.validateAccount(
-        nonce.toString(),
-        JSON.parse(Buffer.from(signature, "base64").toString()),
-        account
-      ))
-    ) {
-      // Clear nonce in the account even signature verification failed
-      await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
-      return res.status(403).json({ error: "wtf" }).end();
-    }
-
-    // Clear nonce in the account after signature verification
-    await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
 
     const preregistrationObj = await Preregistration.findOne({
       account: req.params.account,
@@ -326,3 +287,62 @@ async function sendSlack(msg) {
     console.error(err.message);
   }
 }
+
+exports.updateInfo = async (req, res) => {
+  const account   = req.params.account;
+
+  try {
+    preregistrationObj = await Preregistration.findOne({
+      account: account,
+    });
+
+    if (preregistrationObj === null) {
+      return res.status(404).json({ error: "Account not found" }).end();
+    }
+
+    if (!req.body.id.match(/^@[a-z\d_]{3,20}$/i)) {
+      return res.status(406).json({ error: "Invalid id" }).end();
+    }
+
+    if (req.body.product && (req.body.product !== "community" && !req.body.orderId)) {
+      return res.status(406).json({ error: "Order id is required" }).end();
+    }
+
+    const typeString = [
+      "id",
+      "first_name",
+      "sur_name",
+      "product",
+      "organization",
+      "message",
+      "orderId",
+    ];
+
+    const data = req.body;
+
+    Object.keys(data).forEach((key, index) => {
+
+      if (typeof data[key] !== "string" && typeString.includes(key)) {
+        return res
+            .status(406)
+            .json({ error: key + " must be string" })
+            .end();
+      }
+
+      if (!typeString.includes(key) || !data[key]) {
+       delete data[key];
+      }
+    });
+
+    Preregistration.updateOne(
+        { account: account},
+        data,
+        () => {
+          return res.json({ result: true }).status(201).end();
+        }
+    );
+  } catch (e) {
+    return res.status(500).json({ error: "Something went wrong" }).end();
+  }
+};
+
