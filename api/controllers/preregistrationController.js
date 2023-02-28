@@ -308,3 +308,55 @@ exports.linkAesirX = async (req, res) => {
     return res.status(500).end();
   }
 };
+
+exports.updateInfo = async (req, res) => {
+  const account = req.params.account;
+
+  try {
+    preregistrationObj = await Preregistration.findOne({
+      account: account,
+    });
+
+    if (preregistrationObj === null) {
+      return res.status(404).json({ error: "Account not found" }).end();
+    }
+
+    if (!req.body.id.match(/^@[a-z\d_]{3,20}$/i)) {
+      return res.status(406).json({ error: "Invalid id" }).end();
+    }
+
+    if (req.body.product.trim() !== "community" && !req.body.orderId) {
+      return res.status(406).json({ error: "Order id is required" }).end();
+    }
+
+    Object.entries(req.body).forEach(([key, val]) => {
+      const typeString = [
+        "id",
+        "first_name",
+        "sur_name",
+        "email",
+        "organization",
+        "message",
+        "orderId",
+      ];
+
+      if (typeof val !== "string" && typeString.includes(key)) {
+        return res
+            .status(406)
+            .json({ error: key + " must be string" })
+            .end();
+      }
+    });
+
+    Preregistration.updateOne(
+        { account: account},
+        req.body,
+        () => {
+          return res.json({ result: true }).status(201).end();
+        }
+    );
+  } catch (e) {
+    return res.status(500).json({ error: "Something went wrong" }).end();
+  }
+};
+
