@@ -264,7 +264,7 @@ exports.activate = async (req, res) => {
 
 exports.linkAesirX = async (req, res) => {
   try {
-    const aesirxEndpoint = process.env.AESIRX_API_ENDOINT;
+    const aesirxEndpoint = process.env.AESIRX_API_ENDPOINT;
     const sendPostRequest = async () => {
       try {
         const resp = await axios.post(`${aesirxEndpoint}/index.php?webserviceClient=site&webserviceVersion=1.0.0&option=member&task=checkUsername&api=hal`, {
