@@ -81,19 +81,20 @@ exports.add = async (req, res) => {
       { referred: referrer.referred + 1 }
     );
   }
-  const sendSlack = async () => {
-    try {
-      const resp = await axios.post(`${webhook}`, {
-        text: `Someone registered successfully`,
-      })
-    } catch (err) {
-      return res.status(404).json({ error: "Cannot send message" }).end();
-    }
-  }
-  sendSlack();
 
   res.status(201);
   res.json({ success: true, code: activationCode });
+
+  const sendSlack = async () => {
+    try {
+      const resp = await axios.post(`${webhook}`, {
+        text: `${req.body.id} registered successfully`,
+      })
+    } catch (err) {
+      return res.status(404).json({ error: "Unable to Send Message on Slack" }).end();
+    }
+  }
+  sendSlack();
 };
 
 exports.update = async (req, res) => {
@@ -248,10 +249,10 @@ exports.activate = async (req, res) => {
     const sendSlack = async () => {
       try {
         const resp = await axios.post(`${webhook}`, {
-          text: `Someone activated successfully`,
+          text: `${req.params.id} activated successfully`,
         })
       } catch (err) {
-        return res.status(404).json({ error: "Cannot send message" }).end();
+        return res.status(404).json({ error: "Unable to Send Message on Slack" }).end();
       }
     }
     sendSlack();
@@ -326,10 +327,10 @@ exports.linkAesirX = async (req, res) => {
     const sendSlack = async () => {
       try {
         const resp = await axios.post(`${webhook}`, {
-          text: `Someone linked AesirX successfully`,
+          text: `${req.params.id}: ${req.params.aesirXAccount} linked AesirX successfully`,
         })
       } catch (err) {
-        return res.status(404).json({ error: "Cannot send message" }).end();
+        return res.status(404).json({ error: "Unable to Send Message on Slack" }).end();
       }
     }
     sendSlack();
