@@ -86,8 +86,7 @@ exports.add = async (req, res) => {
   const msg = `${req.body.id} registered successfully`;
   await sendSlack(msg);
 
-  res.status(201);
-  res.json({ success: true, code: activationCode });
+  return res.status(201).json({ success: true, code: activationCode }).end();
 };
 
 exports.update = async (req, res) => {
@@ -239,6 +238,7 @@ exports.activate = async (req, res) => {
       },
       { dateActivation: new Date() }
     );
+
     const msg = `${req.params.id} activated successfully`;
     await sendSlack(msg);
 
@@ -309,6 +309,7 @@ exports.linkAesirX = async (req, res) => {
         dateAesirXAccount: new Date(),
       }
     );
+
     const msg = `${req.params.id}: ${req.params.aesirXAccount} linked AesirX successfully`;
     await sendSlack(msg);
 
