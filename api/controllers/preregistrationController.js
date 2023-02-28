@@ -83,11 +83,11 @@ exports.add = async (req, res) => {
     );
   }
 
-  res.status(201);
-  res.json({ success: true, code: activationCode });
-
   const msg = `${req.body.id} registered successfully`;
   await sendSlack(msg);
+
+  res.status(201);
+  res.json({ success: true, code: activationCode });
 };
 
 exports.update = async (req, res) => {
