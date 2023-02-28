@@ -282,7 +282,7 @@ exports.linkAesirX = async (req, res) => {
 
 async function sendSlack(msg) {
   try {
-     await axios.get(`${webhook}`, {text: msg})
+     await axios.post(`${webhook}`, {text: msg})
   } catch (err) {
     console.error(err.message);
   }
