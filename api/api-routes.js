@@ -26,7 +26,7 @@ router
   .get(validateSignature, validateAccount, preregistrationController.list);
 router
     .route("/preregistration/:account")
-    .put(validateAccount, preregistrationController.updateInfo);
+    .put(validateSignature, validateAccount, preregistrationController.updateInfo);
 
 // Account routes
 const accountController = require("./controllers/accountController");

@@ -108,7 +108,7 @@ exports.update = async (req, res) => {
     ) {
       // Clear nonce in the account even signature verification failed
       await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
-      return res.status(403).json({ error: "wtf" }).end();
+      return res.status(403).json({ error: "Signature verification failed" }).end();
     }
 
     // Clear nonce in the account after signature verification
@@ -183,7 +183,7 @@ exports.list = async (req, res) => {
     ) {
       // Clear nonce in the account even signature verification failed
       await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
-      return res.status(403).json({ error: "wtf" }).end();
+      return res.status(403).json({ error: "Signature verification failed" }).end();
     }
 
     // Clear nonce in the account after signature verification
@@ -310,7 +310,8 @@ exports.linkAesirX = async (req, res) => {
 };
 
 exports.updateInfo = async (req, res) => {
-  const account = req.params.account;
+  const account   = req.params.account;
+  const signature = req.query.signature;
 
   try {
     preregistrationObj = await Preregistration.findOne({
@@ -328,6 +329,25 @@ exports.updateInfo = async (req, res) => {
     if (req.body.product.trim() !== "community" && !req.body.orderId) {
       return res.status(406).json({ error: "Order id is required" }).end();
     }
+
+    const accountObj = await Account.findOne({ address: account });
+    const nonce      = accountObj.nonce;
+
+    // Validate signature by concordium
+    if (
+        !(await concordium.validateAccount(
+            nonce.toString(),
+            JSON.parse(Buffer.from(signature, "base64").toString()),
+            account
+        ))
+    ) {
+      // Clear nonce in the account even signature verification failed
+      await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
+      return res.status(403).json({ error: "Signature verification failed" }).end();
+    }
+
+    // Clear nonce in the account after signature verification
+    await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
 
     const typeString = [
       "id",
