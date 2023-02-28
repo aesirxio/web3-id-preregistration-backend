@@ -7,6 +7,7 @@ const concordium = new Concordium();
 
 const crypto  = require("crypto");
 const axios   = require('axios');
+const res = require("express/lib/response");
 const webhook = process.env.INCOMMING_WEBHOOK;
 
 exports.add = async (req, res) => {
@@ -85,16 +86,8 @@ exports.add = async (req, res) => {
   res.status(201);
   res.json({ success: true, code: activationCode });
 
-  const sendSlack = async () => {
-    try {
-      const resp = await axios.post(`${webhook}`, {
-        text: `${req.body.id} registered successfully`,
-      })
-    } catch (err) {
-      return res.status(404).json({ error: "Unable to Send Message on Slack" }).end();
-    }
-  }
-  sendSlack();
+  const msg = `${req.body.id} registered successfully`;
+  await sendSlack(msg);
 };
 
 exports.update = async (req, res) => {
@@ -246,16 +239,8 @@ exports.activate = async (req, res) => {
       },
       { dateActivation: new Date() }
     );
-    const sendSlack = async () => {
-      try {
-        const resp = await axios.post(`${webhook}`, {
-          text: `${req.params.id} activated successfully`,
-        })
-      } catch (err) {
-        return res.status(404).json({ error: "Unable to Send Message on Slack" }).end();
-      }
-    }
-    sendSlack();
+    const msg = `${req.params.id} activated successfully`;
+    await sendSlack(msg);
 
     return res.status(201).end();
   } catch {
@@ -324,19 +309,19 @@ exports.linkAesirX = async (req, res) => {
         dateAesirXAccount: new Date(),
       }
     );
-    const sendSlack = async () => {
-      try {
-        const resp = await axios.post(`${webhook}`, {
-          text: `${req.params.id}: ${req.params.aesirXAccount} linked AesirX successfully`,
-        })
-      } catch (err) {
-        return res.status(404).json({ error: "Unable to Send Message on Slack" }).end();
-      }
-    }
-    sendSlack();
+    const msg = `${req.params.id}: ${req.params.aesirXAccount} linked AesirX successfully`;
+    await sendSlack(msg);
 
     return res.status(201).end();
   } catch {
     return res.status(500).end();
   }
 };
+
+async function sendSlack(msg) {
+  try {
+     await axios.get(`${webhook}`, {text: msg})
+  } catch (err) {
+    console.error(err.message);
+  }
+}
