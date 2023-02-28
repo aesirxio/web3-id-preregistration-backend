@@ -329,28 +329,36 @@ exports.updateInfo = async (req, res) => {
       return res.status(406).json({ error: "Order id is required" }).end();
     }
 
-    Object.entries(req.body).forEach(([key, val]) => {
-      const typeString = [
-        "id",
-        "first_name",
-        "sur_name",
-        "email",
-        "organization",
-        "message",
-        "orderId",
-      ];
+    const typeString = [
+      "id",
+      "first_name",
+      "sur_name",
+      "product",
+      "organization",
+      "message",
+      "orderId",
+    ];
 
-      if (typeof val !== "string" && typeString.includes(key)) {
+    const data = req.body;
+
+    Object.keys(data).forEach((key, index) => {
+
+      if (typeof data[key] !== "string" && typeString.includes(key)) {
         return res
             .status(406)
             .json({ error: key + " must be string" })
             .end();
       }
+
+      if (!typeString.includes(key) || !data[key]) {
+       delete data[key];
+      }
+
     });
 
     Preregistration.updateOne(
         { account: account},
-        req.body,
+        data,
         () => {
           return res.json({ result: true }).status(201).end();
         }
