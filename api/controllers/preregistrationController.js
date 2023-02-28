@@ -326,7 +326,7 @@ exports.updateInfo = async (req, res) => {
       return res.status(406).json({ error: "Invalid id" }).end();
     }
 
-    if (req.body.product.trim() !== "community" && !req.body.orderId) {
+    if (req.body.product && (req.body.product !== "community" && !req.body.orderId)) {
       return res.status(406).json({ error: "Order id is required" }).end();
     }
 
