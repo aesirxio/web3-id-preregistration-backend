@@ -108,7 +108,7 @@ exports.update = async (req, res) => {
     ) {
       // Clear nonce in the account even signature verification failed
       await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
-      return res.status(403).json({ error: "wtf" }).end();
+      return res.status(403).json({ error: "Signature verification failed" }).end();
     }
 
     // Clear nonce in the account after signature verification
@@ -183,7 +183,7 @@ exports.list = async (req, res) => {
     ) {
       // Clear nonce in the account even signature verification failed
       await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
-      return res.status(403).json({ error: "wtf" }).end();
+      return res.status(403).json({ error: "Signature verification failed" }).end();
     }
 
     // Clear nonce in the account after signature verification
@@ -308,3 +308,83 @@ exports.linkAesirX = async (req, res) => {
     return res.status(500).end();
   }
 };
+
+exports.updateInfo = async (req, res) => {
+  const account   = req.params.account;
+  const signature = req.query.signature;
+
+  try {
+    preregistrationObj = await Preregistration.findOne({
+      account: account,
+    });
+
+    if (preregistrationObj === null) {
+      return res.status(404).json({ error: "Account not found" }).end();
+    }
+
+    if (!req.body.id.match(/^@[a-z\d_]{3,20}$/i)) {
+      return res.status(406).json({ error: "Invalid id" }).end();
+    }
+
+    if (req.body.product.trim() !== "community" && !req.body.orderId) {
+      return res.status(406).json({ error: "Order id is required" }).end();
+    }
+
+    const accountObj = await Account.findOne({ address: account });
+    const nonce      = accountObj.nonce;
+
+    // Validate signature by concordium
+    if (
+        !(await concordium.validateAccount(
+            nonce.toString(),
+            JSON.parse(Buffer.from(signature, "base64").toString()),
+            account
+        ))
+    ) {
+      // Clear nonce in the account even signature verification failed
+      await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
+      return res.status(403).json({ error: "Signature verification failed" }).end();
+    }
+
+    // Clear nonce in the account after signature verification
+    await Account.updateOne({ address: account }, {$set: {nonce: null}}, {upsert: true});
+
+    const typeString = [
+      "id",
+      "first_name",
+      "sur_name",
+      "product",
+      "organization",
+      "message",
+      "orderId",
+    ];
+
+    const data = req.body;
+
+    Object.keys(data).forEach((key, index) => {
+
+      if (typeof data[key] !== "string" && typeString.includes(key)) {
+        return res
+            .status(406)
+            .json({ error: key + " must be string" })
+            .end();
+      }
+
+      if (!typeString.includes(key) || !data[key]) {
+       delete data[key];
+      }
+
+    });
+
+    Preregistration.updateOne(
+        { account: account},
+        data,
+        () => {
+          return res.json({ result: true }).status(201).end();
+        }
+    );
+  } catch (e) {
+    return res.status(500).json({ error: "Something went wrong" }).end();
+  }
+};
+
