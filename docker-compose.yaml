@@ -86,6 +86,31 @@ services:
       - frontend
       - backend
 
+  proxy-files:
+    image: nginx:alpine
+    container_name: proxy-files
+    restart: always
+    ports:
+      - protocol: tcp
+        published: ${FILE_WEB_PORT}
+        target: 443
+    volumes:
+      - type: bind
+        source: ./nginx/proxy-files.conf
+        target: /etc/nginx/conf.d/default.conf
+      - type: bind
+        source: ${FILE_SSL_CRT}
+        target: /etc/nginx/ssl.crt
+      - type: bind
+        source: ${FILE_SSL_KEY}
+        target: /etc/nginx/ssl.key
+      - type: bind
+        source: ${FILE_DATA_DIR}
+        target: /data/files
+    networks:
+      - frontend
+      - backend
+
 volumes:
   mongo: {}
 
