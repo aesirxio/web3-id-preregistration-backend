@@ -9,6 +9,7 @@ const crypto  = require("crypto");
 const axios   = require('axios');
 const fs      = require("fs");
 const mime    = require("mime-types");
+const webhook = process.env.INCOMMING_WEBHOOK;
 
 exports.add = async (req, res) => {
   if (!req.body.id.match(/^@[a-z\d_]{3,20}$/i)) {
@@ -83,8 +84,10 @@ exports.add = async (req, res) => {
     );
   }
 
-  res.status(201);
-  res.json({ success: true, code: activationCode });
+  const msg = `${req.body.id} registered successfully`;
+  await sendSlack(msg);
+
+  return res.status(201).json({ success: true, code: activationCode }).end();
 };
 
 exports.update = async (req, res) => {
@@ -205,6 +208,9 @@ exports.activate = async (req, res) => {
       { dateActivation: new Date() }
     );
 
+    const msg = `${req.params.id} activated successfully`;
+    await sendSlack(msg);
+
     return res.status(201).end();
   } catch {
     return res.status(500).end();
@@ -273,11 +279,22 @@ exports.linkAesirX = async (req, res) => {
       }
     );
 
+    const msg = `${req.params.id}: ${req.params.aesirXAccount} linked AesirX successfully`;
+    await sendSlack(msg);
+
     return res.status(201).end();
   } catch {
     return res.status(500).end();
   }
 };
+
+async function sendSlack(msg) {
+  try {
+     await axios.post(`${webhook}`, {text: msg})
+  } catch (err) {
+    console.error(err.message);
+  }
+}
 
 exports.updateInfo = async (req, res) => {
   const account   = req.params.account;
