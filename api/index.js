@@ -26,6 +26,7 @@ const dbPass = process.env.DBPASS || "password";
 const dbHost = process.env.DBHOST || "localhost";
 const dbName = process.env.DBNAME || "web3idpre";
 const dbPort = process.env.DBPOPT || "27017";
+const avatar = process.env.AVATAR_DIRECTORY || 'avatar';
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -41,6 +42,9 @@ app.use(
 );
 app.use(bodyParser.json());
 // Connect to Mongoose and set connection variable
+
+// Display avatar from URL
+app.use('/' + avatar, express.static(avatar));
 
 mongoose
   .connect(

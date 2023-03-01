@@ -1,13 +1,15 @@
 // api-routes.js
 // Initialize express router and cache
 const router = require("express").Router();
+const multer = require('multer');
 
 // Set default API response
 router.get("/", function (req, res) {
   res.status(404).end();
 });
 const { validateSignature } = require("./middlewares/validators/signature.js");
-const { validateAccount } = require("./middlewares/validators/account.js");
+const { validateAccount }   = require("./middlewares/validators/account.js");
+const { validateAvatar }    = require("./middlewares/validators/avatar.js");
 
 // preregistration routes
 const preregistrationController = require("./controllers/preregistrationController");
@@ -26,7 +28,7 @@ router
   .get(validateSignature, validateAccount, preregistrationController.list);
 router
     .route("/preregistration/:account")
-    .put(validateSignature, validateAccount, preregistrationController.updateInfo);
+    .put(validateSignature, validateAccount, multer().single('avatar'), validateAvatar, preregistrationController.updateInfo);
 
 // Account routes
 const accountController = require("./controllers/accountController");
