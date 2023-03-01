@@ -86,6 +86,31 @@ services:
       - frontend
       - backend
 
+  file_server:
+    image: nginx:alpine
+    container_name: file_server
+    restart: always
+    ports:
+      - protocol: tcp
+        published: ${FILE_SERVER_PORT}
+        target: 80
+    volumes:
+      - type: bind
+        source: ./files
+        target: /usr/share/nginx/html
+      - type: bind
+        source: ./nginx/file_server.conf
+        target: /etc/nginx/conf.d/default.conf
+      - type: bind
+        source: ${FILE_SERVER_SSL_CRT}
+        target: /etc/nginx/ssl.crt
+      - type: bind
+        source: ${FILE_SERVER_SSL_KEY}
+        target: /etc/nginx/ssl.key
+    networks:
+      - files_network
+      - frontend
+
 volumes:
   mongo: {}
 
