@@ -71,5 +71,9 @@ module.exports.preregistration = function () {
       type: Date,
       required: false,
     },
+    avatar: {
+      type: String,
+      required: false,
+    },
   };
 };

@@ -5,8 +5,10 @@ const Account = require("../models/accountModel");
 const Concordium = require("../web3/concordium");
 const concordium = new Concordium();
 
-const crypto = require("crypto");
-const axios = require('axios');
+const crypto  = require("crypto");
+const axios   = require('axios');
+const fs      = require("fs");
+const mime    = require("mime-types");
 
 exports.add = async (req, res) => {
   if (!req.body.id.match(/^@[a-z\d_]{3,20}$/i)) {
@@ -142,6 +144,7 @@ exports.update = async (req, res) => {
 
 exports.list = async (req, res) => {
   const account = req.params.account;
+  const avatarURL = process.env.AVATAR_BASE_URL;
 
   try {
     // Validate account in collection
@@ -165,6 +168,11 @@ exports.list = async (req, res) => {
 
     let objForm = preregistrationObj.toObject();
     objForm.referredAmount = preregistrationObj.referred * 25;
+
+    if (avatarURL && objForm.avatar)
+    {
+      objForm.avatar = avatarURL + objForm.avatar;
+    }
 
     return res.json({ objForm }).status(200).end();
   } catch (e) {
@@ -273,6 +281,8 @@ exports.linkAesirX = async (req, res) => {
 
 exports.updateInfo = async (req, res) => {
   const account   = req.params.account;
+  const avatar    = req.file;
+  const avatarDir = process.env.AVATAR_DIRECTORY || 'avatar';
 
   try {
     preregistrationObj = await Preregistration.findOne({
@@ -291,6 +301,30 @@ exports.updateInfo = async (req, res) => {
       return res.status(406).json({ error: "Order id is required" }).end();
     }
 
+    let data = req.body;
+
+    if (avatar)
+    {
+      const avatarName = preregistrationObj.id;
+      const ext        = mime.extension(req.file.mimetype).toLowerCase();
+      const avatarPath = `/${avatarDir}/${avatarName}.${ext}`;
+
+      // Delete old avatar
+      if (fs.existsSync('.' + avatarPath)) {
+        fs.unlinkSync('.' + avatarPath);
+      }
+
+      // Save avatar to localStorage
+      fs.writeFile('.' + avatarPath, req.file.buffer, (err) => {
+        if (err){
+          return res.status(406).json({ error: "Image upload failed" }).end();
+        };
+      });
+
+      // Add path to DB
+      data.avatar = avatarPath;
+    }
+
     const typeString = [
       "id",
       "first_name",
@@ -299,9 +333,8 @@ exports.updateInfo = async (req, res) => {
       "organization",
       "message",
       "orderId",
+      "avatar",
     ];
-
-    const data = req.body;
 
     Object.keys(data).forEach((key, index) => {
 
