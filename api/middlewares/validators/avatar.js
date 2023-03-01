@@ -18,12 +18,12 @@ exports.validateAvatar = [
 
       // Check image file types
       const ext         = mime.extension(req.file.mimetype).toLowerCase();
-      const typeImages  = ['jpg', 'png'];
+      const typeImages  = ['jpeg', 'jpg', 'png'];
 
       if (!typeImages.includes(ext)) {
         return res
             .status(406)
-            .json({ error: `JPG and PNG files only` })
+            .json({ error: `JPEG, JPG and PNG files only` })
             .end();
       }
     }
