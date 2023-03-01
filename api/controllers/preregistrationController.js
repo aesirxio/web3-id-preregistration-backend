@@ -337,7 +337,10 @@ exports.updateInfo = async (req, res) => {
     Preregistration.updateOne(
         { account: account},
         data,
-        () => {
+        (error) => {
+            if (error && error.message.match(/^E11000/)) {
+              return res.status(406).json({ error: "Id already taken" }).end();
+            }
           return res.json({ result: true }).status(201).end();
         }
     );
